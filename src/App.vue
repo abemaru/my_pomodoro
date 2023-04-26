@@ -1,30 +1,52 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+import { storeToRefs } from 'pinia';
+import { reactive } from 'vue';
+import { useTodoStore } from './store/todos';
+
+const state = reactive({ newTodoLabel: "" });
+const store = useTodoStore();
+const { filteredTodos, filter } = storeToRefs(store);
+
+const toggleTodo = (id: number) => store.toggleTodo(id);
+const addTodo = () => {
+  if (state.newTodoLabel !== "") {
+    store.addTodo(state.newTodoLabel);
+    state.newTodoLabel = "";
+  }
+};
+
 </script>
 
 <template>
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
-  </div>
-  <HelloWorld msg="Vite + Vue" />
+  <input v-model="state.newTodoLabel" />
+  <button @click="addTodo">add</button>
+  
+  <input id="all" type="radio" v-model="filter" value="all" />
+  <label for="all">すべて</label>
+  <input id="finished" type="radio" v-model="filter" value="finished" />
+  <label for="finished">完了済み</label>
+  <input id="unfinished" type="radio" v-model="filter" value="unfinished" />
+  <label for="unfinished">未完了</label>
+
+  <ul>
+    <li
+      :class="{ todo: true, finished: todo.finished}"
+      :key="todo.label"
+      v-for="todo in filteredTodos"
+      v-text="todo.label"
+      @click="toggleTodo(todo.id)"
+    />
+  </ul>
 </template>
 
 <style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+.todo {
+  user-select: none;
+  cursor: pointer;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+
+.todo.finished {
+  text-decoration: line-through;
+  color: gray;
 }
 </style>
